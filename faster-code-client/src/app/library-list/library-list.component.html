@@ -1,0 +1,73 @@
+<mat-toolbar color="warn">
+  <span>Welcome to slow performance!</span>
+</mat-toolbar>
+<mat-form-field>
+<mat-select placeholder="Library" [formControl]="selectedLibraries" multiple>
+  <mat-select-trigger>
+    {{selectedLibraries.value ? selectedLibraries.value[0].name : ''}}
+    <span *ngIf="selectedLibraries.value?.length > 1" class="example-additional-selection">
+      (+{{selectedLibraries.value.length - 1}} {{selectedLibraries.value?.length === 2 ? 'other' : 'others'}})
+    </span>
+  </mat-select-trigger>
+  <mat-option [value]="null" (click)="selectAll(ev)"  #ev >Select All</mat-option>
+   <mat-option *ngFor="let library of libraries" [value]="library">{{library.name}}</mat-option>
+</mat-select>
+</mat-form-field>
+
+<mat-form-field class="example-full-width">
+  <input matInput placeholder="Text" [formControl]="selectedBrand">
+</mat-form-field>
+
+<button mat-raised-button color="primary" (click)="searchDetail()">Search</button>
+<button mat-raised-button class="example-full-width" [disabled]="!dataSource" color="primary" (click)="downloadFile()">Export</button>
+<button mat-raised-button [disabled]="!dataSource" color="primary" (click)="downloadIds()">Download</button>
+
+<div class="loading-indicator"  *ngIf="searching">
+  <mat-progress-bar mode="query"></mat-progress-bar>
+</div>
+
+<table>
+  <tr>
+     <td>Search All Execution Time: {{searchAllExecutionTime | number : '1.2-2'}}</td>
+  </tr>
+  <tr>
+     <td>Search Text Execution Time: {{searchTextExecutionTime | number : '1.2-2'}}</td>
+  </tr>
+  <tr>
+     <td>Search Single Execution Time: {{searchSingleExecutionTime | number : '1.2-2'}}</td>
+  </tr>
+  <tr>
+     <td>Download Execution Time: {{downloadExecutionTime | number : '1.2-2'}}</td>
+  </tr>
+</table>
+
+<div  *ngIf="dataSource">
+<h2>Transactions</h2>
+<div class="mat-elevation-z8">
+  <mat-form-field class="custom-field">
+    <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+  </mat-form-field>
+  <table mat-table [dataSource]="dataSource" matSort>
+
+    <ng-container matColumnDef="library">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Library </th>
+      <td mat-cell *matCellDef="let element"> {{element.library}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="member">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Member </th>
+      <td mat-cell *matCellDef="let element"> {{element.member}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="book">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Book </th>
+      <td mat-cell *matCellDef="let element"> {{element.book}} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+</div>
+</div>

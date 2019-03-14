@@ -1,0 +1,57 @@
+.example-additional-selection {
+  opacity: 0.75;
+  font-size: 0.75em;
+}
+
+.example-full-width{
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+table {
+  width: 100%;
+}
+
+.custom-field {
+  font-size: 14px;
+  width: calc(100% - 40px);
+  padding: 5px;
+  padding-left: 20px;
+}
+
+.loading-indicator {
+  position: fixed;
+  z-index: 999;
+  height: 2em;
+  width: 30em;
+  overflow: show;
+  margin: auto;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+/* Transparent Overlay */
+.loading-indicator:before {
+  content: '';
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.3);
+}
+.progress{
+  width: 100px;
+  display: block;
+  height: 16px;
+}
+
+.progress-bar{
+  background-color: #3f51b5;
+  height: 100%;
+  text-align: center;
+  color: #fff;
+}

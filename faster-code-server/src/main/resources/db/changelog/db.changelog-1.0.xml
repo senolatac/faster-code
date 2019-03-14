@@ -1,0 +1,170 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="sha" id="280220191">
+        <sql>
+            CREATE TABLE library (
+            id BIGINT NOT NULL AUTO_INCREMENT,
+            no INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            CONSTRAINT PK_id PRIMARY KEY (id)
+            );
+        </sql>
+        <rollback>
+            DROP TABLE library;
+        </rollback>
+    </changeSet>
+    <changeSet author="sha" id="280220192">
+        <sql>
+            insert into library (name, no) values ("Library A", 0);
+            insert into library (name, no) values ("Library B", 1);
+            insert into library (name, no) values ("Library C", 2);
+            insert into library (name, no) values ("Library D", 3);
+            insert into library (name, no) values ("Library E", 4);
+            insert into library (name, no) values ("Library F", 5);
+            insert into library (name, no) values ("Library G", 6);
+            insert into library (name, no) values ("Library H", 7);
+            insert into library (name, no) values ("Library I", 8);
+            insert into library (name, no) values ("Library J", 9);
+            insert into library (name, no) values ("Library K", 10);
+            insert into library (name, no) values ("Library L", 11);
+            insert into library (name, no) values ("Library M", 12);
+            insert into library (name, no) values ("Library N", 13);
+            insert into library (name, no) values ("Library O", 14);
+            insert into library (name, no) values ("Library P", 15);
+            insert into library (name, no) values ("Library R", 16);
+            insert into library (name, no) values ("Library S", 17);
+            insert into library (name, no) values ("Library T", 18);
+            insert into library (name, no) values ("Library U", 19);
+            insert into library (name, no) values ("Library V", 20);
+            insert into library (name, no) values ("Library Y", 21);
+            insert into library (name, no) values ("Library Z", 22);
+            insert into library (name, no) values ("Library X", 23);
+            insert into library (name, no) values ("Library Q", 24);
+            insert into library (name, no) values ("Library W", 25);
+        </sql>
+        <rollback>
+            DELETE FROM library;
+        </rollback>
+    </changeSet>
+    <changeSet author="sha" id="280220193">
+    <sql>
+        CREATE TABLE book (
+        id BIGINT NOT NULL AUTO_INCREMENT,
+        title VARCHAR(255) NOT NULL,
+        library_id BIGINT NOT NULL,
+        CONSTRAINT PK_id PRIMARY KEY (id),
+        CONSTRAINT fk_book_lib FOREIGN KEY (library_id) REFERENCES library(id) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+    </sql>
+    <rollback>
+        DROP TABLE book;
+    </rollback>
+</changeSet>
+    <changeSet author="sha" id="280220194" runOnChange="true">
+        <preConditions onFail="CONTINUE">
+            <dbms type="MySQL"/>
+        </preConditions>
+        <!-- liquibase does not drop stored procedures automatically -->
+        <sql>
+            drop procedure if exists doWhileBook
+        </sql>
+        <createProcedure>
+            create procedure doWhileBook()
+            BEGIN
+            DECLARE i INT DEFAULT 100;
+            WHILE (i >= 0) DO
+            INSERT INTO book (title, library_id) values (CONCAT('Book ', i), (Select l.id from library l where l.no =
+            i%26));
+            SET i = i-1;
+            END WHILE;
+            END
+        </createProcedure>
+        <sql>
+            CALL doWhileBook();
+        </sql>
+        <rollback>
+            DROP procedure doWhileBook;
+        </rollback>
+    </changeSet>
+    <changeSet author="sha" id="280220195">
+        <sql>
+            CREATE TABLE member (
+            id BIGINT NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            membership_date DATETIME NOT NULL,
+            CONSTRAINT PK_id PRIMARY KEY (id)
+            );
+        </sql>
+        <rollback>
+            DROP TABLE member;
+        </rollback>
+    </changeSet>
+    <changeSet author="sha" id="280220196" runOnChange="true">
+        <sql>
+            drop procedure if exists doWhileMember
+        </sql>
+        <createProcedure>
+            create procedure doWhileMember()
+            BEGIN
+            DECLARE i INT DEFAULT 100;
+            WHILE (i >= 0) DO
+            INSERT INTO member (name, membership_date) values (CONCAT('Member ', i), NOW());
+            SET i = i-1;
+            END WHILE;
+            END
+        </createProcedure>
+        <sql>
+            CALL doWhileMember();
+        </sql>
+        <rollback>
+            DROP procedure doWhileMember;
+        </rollback>
+    </changeSet>
+    <changeSet id="280220197" author="sha">
+        <sql>
+            CREATE TABLE transaction (
+            id BIGINT NOT NULL AUTO_INCREMENT,
+            book_id BIGINT NOT NULL,
+            member_id BIGINT NOT NULL,
+            date_of_issue DATETIME NOT NULL,
+            CONSTRAINT PK_id PRIMARY KEY (id),
+            CONSTRAINT fk_tran_book FOREIGN KEY (book_id) REFERENCES book(id) ON DELETE CASCADE ON UPDATE CASCADE,
+            CONSTRAINT fk_tran_member FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE ON UPDATE
+            CASCADE
+            );
+
+        </sql>
+        <rollback>
+            DROP TABLE transaction;
+        </rollback>
+    </changeSet>
+    <changeSet author="sha" id="280220198" runOnChange="true">
+        <sql>
+            drop procedure if exists doWhileTransaction
+        </sql>
+        <createProcedure>
+            create procedure doWhileTransaction()
+            BEGIN
+            DECLARE i INT DEFAULT 100;
+            DECLARE j INT DEFAULT 100;
+            WHILE (i >= 0) DO
+            SET j = 100;
+            WHILE (j >= 0) DO
+            INSERT INTO transaction (book_id, member_id, date_of_issue)
+            values ((Select b.id from book b where b.title = CONCAT('Book ', i)),
+            (Select m.id from member m where m.name = CONCAT('Member ', j)),
+            NOW());
+            SET j = j-1;
+            END WHILE;
+            SET i = i-1;
+            END WHILE;
+            END
+        </createProcedure>
+        <sql>
+            CALL doWhileTransaction();
+        </sql>
+        <rollback>
+            DROP procedure doWhileTransaction;
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
