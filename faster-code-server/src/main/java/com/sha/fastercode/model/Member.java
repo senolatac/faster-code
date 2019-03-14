@@ -23,6 +23,12 @@ public class Member implements IModel {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "job")
+    private String job;
+
     @Column(name = "membership_date")
     private LocalDateTime membershipDate;
 }

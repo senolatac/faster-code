@@ -51,6 +51,10 @@
         CREATE TABLE book (
         id BIGINT NOT NULL AUTO_INCREMENT,
         title VARCHAR(255) NOT NULL,
+        author VARCHAR(255),
+        serial_number VARCHAR(255),
+        category VARCHAR(255),
+        publish_date DATE,
         library_id BIGINT NOT NULL,
         CONSTRAINT PK_id PRIMARY KEY (id),
         CONSTRAINT fk_book_lib FOREIGN KEY (library_id) REFERENCES library(id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -71,9 +75,12 @@
         <createProcedure>
             create procedure doWhileBook()
             BEGIN
-            DECLARE i INT DEFAULT 100;
+            DECLARE i INT DEFAULT 1000;
             WHILE (i >= 0) DO
-            INSERT INTO book (title, library_id) values (CONCAT('Book ', i), (Select l.id from library l where l.no =
+            INSERT INTO book (title, author, serial_number, category, publish_date, library_id) values (CONCAT('Book ',
+            i), CONCAT('Author ', i), CONCAT('SERIAL', i), CONCAT('Category', i), NOW(), (Select l.id from library l
+            where
+            l.no =
             i%26));
             SET i = i-1;
             END WHILE;
@@ -91,6 +98,8 @@
             CREATE TABLE member (
             id BIGINT NOT NULL AUTO_INCREMENT,
             name VARCHAR(255) NOT NULL,
+            title VARCHAR(255),
+            job VARCHAR(255),
             membership_date DATETIME NOT NULL,
             CONSTRAINT PK_id PRIMARY KEY (id)
             );
@@ -106,9 +115,10 @@
         <createProcedure>
             create procedure doWhileMember()
             BEGIN
-            DECLARE i INT DEFAULT 100;
+            DECLARE i INT DEFAULT 1000;
             WHILE (i >= 0) DO
-            INSERT INTO member (name, membership_date) values (CONCAT('Member ', i), NOW());
+            INSERT INTO member (name, title, job, membership_date) values
+            (CONCAT('Member ', i), CONCAT('Title ', i), CONCAT('Job ', i), NOW());
             SET i = i-1;
             END WHILE;
             END
@@ -127,6 +137,8 @@
             book_id BIGINT NOT NULL,
             member_id BIGINT NOT NULL,
             date_of_issue DATETIME NOT NULL,
+            note VARCHAR(255),
+            explanation VARCHAR(255),
             CONSTRAINT PK_id PRIMARY KEY (id),
             CONSTRAINT fk_tran_book FOREIGN KEY (book_id) REFERENCES book(id) ON DELETE CASCADE ON UPDATE CASCADE,
             CONSTRAINT fk_tran_member FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE ON UPDATE
@@ -145,26 +157,68 @@
         <createProcedure>
             create procedure doWhileTransaction()
             BEGIN
-            DECLARE i INT DEFAULT 100;
-            DECLARE j INT DEFAULT 100;
+            DECLARE i INT DEFAULT 1000;
+            DECLARE j INT DEFAULT 1000;
             WHILE (i >= 0) DO
-            SET j = 100;
+            SET j = 1000;
             WHILE (j >= 0) DO
-            INSERT INTO transaction (book_id, member_id, date_of_issue)
+            INSERT INTO transaction (book_id, member_id, date_of_issue, note, explanation)
             values ((Select b.id from book b where b.title = CONCAT('Book ', i)),
             (Select m.id from member m where m.name = CONCAT('Member ', j)),
-            NOW());
+            NOW(), 'note will be ...', 'explanation will be ...');
             SET j = j-1;
             END WHILE;
             SET i = i-1;
             END WHILE;
             END
         </createProcedure>
-        <sql>
-            CALL doWhileTransaction();
-        </sql>
         <rollback>
             DROP procedure doWhileTransaction;
+        </rollback>
+    </changeSet>
+    <changeSet author="sha" id="280220199" runOnChange="true">
+        <sql>
+            drop procedure if exists doBatchWhileTransaction
+        </sql>
+        <createProcedure>
+            create procedure doBatchWhileTransaction()
+            BEGIN
+            DECLARE i INT DEFAULT 100;
+            DECLARE j INT DEFAULT 1000;
+            WHILE (i >= 0) DO
+            SET j = 1000;
+            SET @_insert = "";
+            WHILE (j >= 0) DO
+            SET @varBookId = (Select b.id from book b where b.title = CONCAT('Book ', i));
+            SET @varMemberId = (Select m.id from member m where m.name = CONCAT('Member ', j));
+            SET @varTime = NOW();
+            SET @varNote = "'note will be ...'";
+            SET @varExplanation = "'explanation will be ...'";
+            SET @concatenated = CONCAT('(',CONCAT_WS(', ', @varBookId, @varMemberId, CONCAT("'",@varTime,"'"), @varNote,
+            @varExplanation),')');
+            IF   @_insert = "" THEN SET @_insert = @concatenated;
+            ELSE SET @_insert = CONCAT_WS(', ', @_insert,@concatenated);
+            END IF;
+            SET j = j-1;
+            END WHILE;
+
+            SET @str = CONCAT("INSERT INTO transaction (book_id, member_id, date_of_issue, note, explanation) VALUES ",
+            @_insert);
+            PREPARE stmt1 FROM @str;
+            EXECUTE stmt1;
+            DEALLOCATE PREPARE stmt1;
+
+            SET i = i-1;
+            END WHILE;
+            END
+        </createProcedure>
+        <sql>
+            SET GLOBAL max_allowed_packet=1024 * 1024 * 500;
+            set session bulk_insert_buffer_size = 1024 * 1024 * 500;
+            call doBatchWhileTransaction();
+        </sql>
+        <rollback>
+            DROP procedure doBatchWhileTransaction;
         </rollback>
     </changeSet>
 </databaseChangeLog>

@@ -24,4 +24,10 @@ public class Transaction implements IModel {
 
     @Column(name="date_of_issue")
     private LocalDateTime dateOfIssue;
+
+    @Column(name = "note")
+    private String note;
+
+    @Column(name = "explanation")
+    private String explanation;
 }
