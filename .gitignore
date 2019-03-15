@@ -18,11 +18,8 @@ speed-measure-plugin.json
 # IDEs and editors
 /faster-code-client/.idea
 /faster-code-server/.idea
-.project
-.classpath
 .c9/
 *.launch
-.settings/
 *.sublime-workspace
 
 # IDE - VSCode
