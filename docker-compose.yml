@@ -2,6 +2,7 @@ version: '3.0'
 services:
     faster-mysql:
         image: mysql:latest
+        command: --max_allowed_packet=52505856 --bulk_insert_buffer_size=52505856
         environment:
             - MYSQL_ROOT_PASSWORD=1234
             - MYSQL_DATABASE=shafaster
@@ -9,15 +10,15 @@ services:
             - MYSQL_PASSWORD=demo
         ports:
             - 3306:3306
-    faster-server:
-        build: ./faster-code-server
-        command: 
-            - /wait-for-it.sh -t 30 uploader-mysql:3306 -- ./faster-code-server
-        ports:
-            - 8080:8080
-        links:
-            - faster-mysql:mysql
     faster-client:
         build: ./faster-code-client
         ports:
             - 4200:80
+    faster-server:
+        build: ./faster-code-server
+        command: 
+            - /wait-for-it.sh -t 5000 faster-mysql:3306 -- ./faster-code-server
+        ports:
+            - 8080:8080
+        links:
+            - faster-mysql:mysql
