@@ -213,8 +213,6 @@
             END
         </createProcedure>
         <sql>
-            SET GLOBAL max_allowed_packet=1024 * 1024 * 500;
-            set session bulk_insert_buffer_size = 1024 * 1024 * 500;
             call doBatchWhileTransaction();
         </sql>
         <rollback>
